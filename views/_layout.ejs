@@ -1,0 +1,259 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>Sign-in</title>
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Roboto:400,100);
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Roboto", sans-serif;
+        background-color: rgb(34, 34, 34);
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .login-card {
+        padding: 40px;
+        padding-top: 0px;
+        padding-bottom: 10px;
+        width: 275px;
+        background-color: #444;
+        color: rgb(222, 226, 230);
+        margin: 0 auto 10px;
+        border-radius: 2px;
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .login-card + .login-card {
+        padding-top: 10px;
+      }
+
+      .login-card h1 {
+        font-weight: 500;
+        text-align: center;
+        font-size: 2.3em;
+      }
+
+      .login-card button {
+        width: 100%;
+        display: block;
+        margin-bottom: 10px;
+        position: relative;
+      }
+
+      .login-card input[type="text"],
+      input[type="email"],
+      input[type="password"],
+      input[type="number"] {
+        height: 44px;
+        font-size: 16px;
+        width: 100%;
+        margin-bottom: 10px;
+        appearance: none;
+        background: #fff;
+        border: 1px solid #d9d9d9;
+        border-top: 1px solid #c0c0c0;
+        padding: 0 8px;
+        box-sizing: border-box;
+
+        -webkit-appearance: none;
+        -moz-box-sizing: border-box;
+      }
+
+      button {
+        text-align: center;
+        font-size: 14px;
+        font-family: "Arial", sans-serif;
+        font-weight: 700;
+        height: 36px;
+        padding: 0 8px;
+      }
+
+      button {
+        border: 0px;
+        color: rgb(34, 34, 34);
+        background-color: rgb(173, 181, 189);
+        border-radius: 5px;
+      }
+
+      .login-card a {
+        text-decoration: none;
+        color: rgb(222, 226, 230);
+        font-weight: 400;
+        text-align: center;
+        display: inline-block;
+        opacity: 0.6;
+      }
+
+      .login-help {
+        color: rgb(222, 226, 230);
+        width: 100%;
+        text-align: center;
+        font-size: 12px;
+      }
+
+      .login-client-image img {
+        margin-bottom: 20px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 20%;
+      }
+
+      .login-card input[type="checkbox"] {
+        margin-bottom: 10px;
+      }
+
+      .login-card label {
+        color: #999;
+      }
+
+      .grant-debug {
+        text-align: center;
+        font-family: Fixed, monospace;
+        width: 100%;
+        font-size: 12px;
+        color: #999;
+      }
+
+      .grant-debug div {
+        padding-top: 10px;
+      }
+
+      .login-help + form {
+        margin-top: 10px;
+      }
+
+      ul {
+        font-weight: 100;
+        padding-left: 1em;
+        list-style-type: circle;
+      }
+
+      li + ul,
+      ul + li,
+      li + li {
+        padding-top: 0.3em;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      header {
+        width: calc(275px + 80px);
+        height: 100px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      header img {
+        height: 75px;
+      }
+
+      .pages-wrapper {
+        overflow: hidden;
+        scroll-behavior: smooth;
+      }
+      .pages-wrapper .pages {
+        display: flex;
+        width: 200%;
+      }
+      .pages-wrapper .pages .page {
+        width: 100%;
+        padding: 3px;
+      }
+
+      .error-box {
+        background-color: rgb(44, 11, 14);
+        color: rgb(234, 134, 143);
+        border-color: #842029;
+        border-radius: 5px;
+        border-width: 1px;
+        border-style: solid;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      .error-box p {
+        margin: 0;
+      }
+
+      #active-instance {
+        border: 1px solid #999;
+        border-radius: 3px;
+        margin: 5px 0;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.5rem;
+
+        display: flex;
+        gap: 5px;
+        cursor: pointer;
+      }
+      #active-instance img {
+        width: 16px;
+        height: 16px;
+      }
+
+      .tiny-text {
+        font-size: small;
+        color: #ddd;
+        opacity: 0.5;
+      }
+
+      .current-user {
+        border: 1px solid #999;
+        border-radius: 3px;
+        margin: 5px 0;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.5rem;
+      }
+
+      .footer-card {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <header>
+        <img src="/lemmy.svg" />
+      </header>
+      <div class="login-card">
+        <h1><%= title %></h1>
+        <%- body %>
+        <div class="login-help">
+          <% if (uid) { %>
+          <a href="/interaction/<%= uid %>/abort">[ Cancel ]</a>
+          <% } %> <% if (r_client.tosUri) { %>
+          <a href="<%= r_client.tosUri %>">[ Terms of Service ]</a>
+          <% } %> <% if (r_client.policyUri) { %>
+          <a href="<%= r_client.policyUri %>">[ Privacy Policy ]</a>
+          <% } %>
+        </div>
+      </div>
+      <%- include('footer.ejs'); %>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+<div class="errors"></div>
+
+<form autocomplete="off" action="/interaction/<%= uid %>/login" method="post" class="pages-wrapper">
+  <div class="pages">
+    <div class="page" id="instance-select">
+      <input required type="text" name="instance" placeholder="Instance Domain (toast.ooo)" autofocus="on">
+
+      <button type="button" class="check-instance">Next</button>
+    </div>
+    
+    <div class="page" id="login">
+      <div id="active-instance" role="button">
+        <img class="instance-icon" src="https://toast.ooo/pictrs/image/ca3ba06a-9ee4-4c75-b622-aa590e30c652.png" alt="toast.ooo Logo" />
+        <div class="instance-name">
+          <span class="instance-name-display">toast.ooo</span>
+          <a class="instance-url" href="#" target="_blank">(toast.ooo)</a>
+        </div>
+      </div>
+
+      <input required type="text" name="login" placeholder="Username" <% if (params.login_hint) { %> value="<%= params.login_hint %>" <% } %>>
+      <input required type="password" name="password" placeholder="Password">
+      <input style="display:none" type="number" name="totp" placeholder="2FA Token" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" />
+      <button type="submit" class="login login-submit">Sign-in</button>
+    </div>
+  </div>
+</form>
+
+<script src="/login.js"></script>
