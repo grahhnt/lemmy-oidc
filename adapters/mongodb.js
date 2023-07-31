@@ -4,7 +4,7 @@
 import { MongoClient } from "mongodb"; // eslint-disable-line import/no-unresolved
 import snakeCase from "lodash/snakeCase.js";
 
-let DB;
+export let DB;
 
 const grantable = new Set([
   "access_token",

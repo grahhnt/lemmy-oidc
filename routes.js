@@ -7,6 +7,7 @@ import isEmpty from "lodash/isEmpty.js";
 import { urlencoded } from "express"; // eslint-disable-line import/no-unresolved
 
 import Account from "./account.js";
+import LemmyAuth from "./lemmyauth.js";
 import { errors } from "oidc-provider";
 
 const body = urlencoded({ extended: false });
@@ -95,74 +96,43 @@ export default (app, provider) => {
           throw new Error("Missing username");
         }
 
-        if (!req.body.password) {
-          throw new Error("Missing password");
-        }
+        const username = req.body.login + "@" + req.body.instance;
 
-        const lemmyauth = await fetch(
-          `https://${req.body.instance}/api/v3/user/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username_or_email: req.body.login,
-              password: req.body.password,
-              totp_2fa_token: req.body.totp,
-            }),
+        if (req.body.token) {
+          const code = await LemmyAuth.getCode(username);
+
+          if (req.body.token + "" !== code + "") {
+            throw new Error("Code does not match");
           }
-        ).then((a) => a.json());
 
-        // lemmy does respond with a space in `incorrect_totp token`
-        if (
-          lemmyauth.error === "missing_totp_token" ||
-          lemmyauth.error === "incorrect_totp token"
-        ) {
-          throw new Error("totp_token");
+          await LemmyAuth.removeCode(username);
+
+          const account = await Account.findByLogin(username);
+
+          const result = {
+            login: {
+              accountId: account.accountId,
+            },
+          };
+
+          const intresult = await provider.interactionResult(req, res, result, {
+            mergeWithLastSubmission: false,
+          });
+
+          res.json({
+            success: true,
+            redirect: intresult,
+          });
+        } else {
+          await LemmyAuth.isValidInstance(req.body.instance);
+
+          const code = await LemmyAuth.createCode(username);
+          LemmyAuth.pm(
+            username,
+            `You or someone else is trying to identify you using lemmy-oidc\n\nCode: ${code}\n\nIf you did not request this code; you can safely ignore it\n\nhttps://github.com/grahhnt/lemmy-oidc`
+          );
+          throw new Error("sent_code");
         }
-
-        if (lemmyauth.error) {
-          throw new Error("Lemmy login failed");
-        }
-
-        const jwt = lemmyauth.jwt;
-
-        const lemmyuser = await fetch(
-          `https://${req.body.instance}/api/v3/site?auth=${jwt}`
-        ).then((a) => a.json());
-
-        if (!lemmyuser || lemmyuser.error || !lemmyuser.my_user) {
-          throw new Error("Lemmy auth failed");
-        }
-
-        if (
-          lemmyuser.my_user.local_user_view.person.banned ||
-          lemmyuser.my_user.local_user_view.person.deleted
-        ) {
-          throw new Error("Lemmy user invalid");
-        }
-
-        const account = await Account.findByLogin(
-          lemmyuser.my_user.local_user_view.person.name +
-            "@" +
-            req.body.instance
-        );
-
-        const result = {
-          login: {
-            accountId: account.accountId,
-          },
-        };
-
-        const intresult = await provider.interactionResult(req, res, result, {
-          mergeWithLastSubmission: false,
-        });
-
-        res.json({
-          success: true,
-          redirect: intresult,
-        });
       } catch (err) {
         res.json({
           success: false,
@@ -253,7 +223,7 @@ export default (app, provider) => {
     res.clearCookie("_session");
     res.render("loggedout", {
       uid: false,
-      client: {
+      r_client: {
         tosUri: null,
         policyUri: null,
       },

@@ -18,8 +18,7 @@
       </div>
 
       <input required type="text" name="login" placeholder="Username" <% if (params.login_hint) { %> value="<%= params.login_hint %>" <% } %>>
-      <input required type="password" name="password" placeholder="Password">
-      <input style="display:none" type="number" name="totp" placeholder="2FA Token" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" />
+      <input style="display:none" type="number" name="token" placeholder="Code" inputmode="numeric" pattern="[0-9]*" />
       <button type="submit" class="login login-submit">Sign-in</button>
     </div>
   </div>

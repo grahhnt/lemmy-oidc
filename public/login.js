@@ -6,6 +6,7 @@ const $instanceTxt = document.querySelector(
 const $usernameTxt = document.querySelector("#login input[name=login]");
 const $passwordTxt = document.querySelector("#login input[name=password]");
 const $totpTxt = document.querySelector("#login input[name=totp]");
+const $tokenTxt = document.querySelector("#login input[name=token]");
 const $checkDomainBtn = document.querySelector(
   "#instance-select .check-instance"
 );
@@ -122,10 +123,21 @@ $checkDomainBtn.addEventListener("click", async function (e) {
     return;
   }
 
+  if (software.info.length > 0) {
+    software.info.forEach((info) => {
+      showError("", info);
+    });
+  }
+
   instance = software;
 
-  $activeInstanceIcon.setAttribute("src", instance.meta.icon);
-  $activeInstanceIcon.setAttribute("alt", `${instance.meta.name} Lemmy Logo`);
+  if (instance.meta.icon) {
+    $activeInstanceIcon.removeAttribute("style");
+    $activeInstanceIcon.setAttribute("src", instance.meta.icon);
+    $activeInstanceIcon.setAttribute("alt", `${instance.meta.name} Lemmy Logo`);
+  } else {
+    $activeInstanceIcon.setAttribute("style", "display:none;");
+  }
   $activeInstanceName.innerText = instance.meta.name;
   $activeInstanceURL.innerText = `(${HOST})`;
   $activeInstanceURL.setAttribute("href", `https://${HOST}`);
@@ -148,9 +160,9 @@ $form.addEventListener("submit", async (e) => {
     body: data,
   }).then((a) => a.json());
 
-  if (loginattempt.error === "totp_token") {
-    showError("Login Error", "2FA token missing or invalid");
-    $totpTxt.removeAttribute("style");
+  if (loginattempt.error === "sent_code") {
+    showError("", "A code has been PM'd to your Lemmy account");
+    $tokenTxt.removeAttribute("style");
     return;
   }
 

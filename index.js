@@ -14,6 +14,7 @@ import Provider from "oidc-provider"; // from 'oidc-provider';
 import Account from "./account.js";
 import configuration from "./config.js";
 import routes from "./routes.js";
+import lemmyauth from "./lemmyauth.js";
 
 const __dirname = dirname(import.meta.url);
 
@@ -63,6 +64,8 @@ app.get("/api/get-software", async (req, res) => {
     version: "",
   };
 
+  let info = [];
+
   try {
     const wk_nodeinfo = await fetch(
       `https://${HOST}/.well-known/nodeinfo`
@@ -82,24 +85,25 @@ app.get("/api/get-software", async (req, res) => {
 
     const nodeinfo = await fetch(nodeinfo_url).then((a) => a.json());
 
-    if (!nodeinfo?.software?.name) {
-      throw new Error("Nodeinfo 2.0 software unknown");
-    }
+    if (
+      !nodeinfo?.software?.name ||
+      nodeinfo.software.name.toLowerCase() !== "lemmy"
+    ) {
+      info.push(
+        "Instance is not a Lemmy instance, you may not be able to receive the code (LemmyNet/lemmy#2657)"
+      );
+    } else {
+      const lemmyMeta = await fetch(`https://${HOST}/api/v3/site`).then((a) =>
+        a.json()
+      );
 
-    if (nodeinfo.software.name.toLowerCase() !== "lemmy") {
-      throw new Error("Nodeinfo 2.0 software is not Lemmy");
-    }
+      if (lemmyMeta?.site_view?.site?.name) {
+        meta.name = lemmyMeta.site_view.site.name;
+      }
 
-    const lemmyMeta = await fetch(`https://${HOST}/api/v3/site`).then((a) =>
-      a.json()
-    );
-
-    if (lemmyMeta?.site_view?.site?.name) {
-      meta.name = lemmyMeta.site_view.site.name;
-    }
-
-    if (lemmyMeta?.site_view?.site?.icon) {
-      meta.icon = lemmyMeta.site_view.site.icon;
+      if (lemmyMeta?.site_view?.site?.icon) {
+        meta.icon = lemmyMeta.site_view.site.icon;
+      }
     }
 
     software.name = nodeinfo.software.name;
@@ -116,6 +120,7 @@ app.get("/api/get-software", async (req, res) => {
     success: true,
     software,
     meta,
+    info,
   });
 });
 
